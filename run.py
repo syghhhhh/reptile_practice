@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2024/8/20 14:46
-# @Author  : 施昀谷
+# @Author  : syghhhh
 # @File    : run.py
 
 
@@ -64,7 +64,7 @@ def download_docx(xlsx_file_path, download_folder, user_download_folder):
     from time import sleep
     df = pd.read_excel(xlsx_file_path, index_col=0)
     df_now = df[df['status'] == '有效 '].reset_index(drop=True)
-    # docx_base_url = 'https://wb.flk.npc.gov.cn/flfg/WORD/replace.docx'
+    # docx_base_url = ''
     # 启动chrome驱动 这步需要等待一段时间
     driver = webdriver.Chrome()
     for i in tqdm(range(int(df_now.shape[0]))):
@@ -108,7 +108,7 @@ def download_docx(xlsx_file_path, download_folder, user_download_folder):
 if __name__ == '__main__':
     # task = 1
     task = 2
-    url = 'https://flk.npc.gov.cn/list.html?sort=true&type=flfg&xlwj=02,03,04,05,06,07,08'
+    url = ''
     user_download_folder = r'C:\Users\70473\Downloads'
     if task == 1:
         get_result_list(url, 45, r'D:\project\reptile\url.xlsx')
