@@ -56,20 +56,20 @@ def get_result_list(html_path, page_num, save_file):
 
 def download_docx(xlsx_file_path, download_folder, user_download_folder):
     from shutil import move
-    from os.path import join
+    from os.path import join, exists
     from tqdm import tqdm
     import pandas as pd
     from selenium import webdriver
     from selenium.webdriver.common.by import By
     from time import sleep
-    try:
-        df = pd.read_excel(xlsx_file_path, index_col=0)
-        df_now = df[df['status'] == '有效 '].reset_index(drop=True)
-        # docx_base_url = 'https://wb.flk.npc.gov.cn/flfg/WORD/replace.docx'
-        # 启动chrome驱动 这步需要等待一段时间
-        driver = webdriver.Chrome()
-        for i in tqdm(range(int(df_now.shape[0]))):
-            data = df_now.iloc[i]
+    df = pd.read_excel(xlsx_file_path, index_col=0)
+    df_now = df[df['status'] == '有效 '].reset_index(drop=True)
+    # docx_base_url = 'https://wb.flk.npc.gov.cn/flfg/WORD/replace.docx'
+    # 启动chrome驱动 这步需要等待一段时间
+    driver = webdriver.Chrome()
+    for i in tqdm(range(int(df_now.shape[0]))):
+        data = df_now.iloc[i]
+        try:
             # 进入想要爬取的网页
             driver.get(data['url'])
             # 通过唯一id检索到想要的元素
@@ -84,13 +84,25 @@ def download_docx(xlsx_file_path, download_folder, user_download_folder):
             button = driver.find_element(By.CLASS_NAME, "xia-z")
             # 模拟鼠标左键点击
             button.click()
-            # 停顿5s保证下载完
-            sleep(5)
+            download_docx_path = join(user_download_folder, docs_id + '.docx')
+            # 停顿保证下载完
+            spend_time = 0
+            download_status = True
+            while not exists(download_docx_path):
+                spend_time += 1
+                sleep(1)
+                # 如果10s还没下完 判断有问题跳过这个文件 手动处理
+                if spend_time > 10:
+                    print(f"download {data['title']} error!")
+                    download_status = False
+                    break
+            if not download_status:
+                continue
             # 从默认下载地址移动到指定地址
-            move(join(user_download_folder, docs_id + '.docx'), join(download_folder, data['title'] + '.docx'))
-        driver.quit()
-    except Exception as e:
-        print(e)
+            move(download_docx_path, join(download_folder, data['title'] + '.docx'))
+        except Exception as e:
+            print(f"{data['title']} error!")
+    driver.quit()
 
 
 if __name__ == '__main__':
